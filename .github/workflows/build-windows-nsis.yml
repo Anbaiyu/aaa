@@ -1,0 +1,78 @@
+name: build-windows-nsis
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 仅构建（NSIS）
+      - name: Build with Tauri (NSIS only)
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: ./
+          args: --target x86_64-pc-windows-msvc --bundles nsis
+
+      # 列出所有 .exe（方便排查）
+      - name: List all EXE under workspace
+        shell: pwsh
+        run: |
+          Write-Host "=== EXE under workspace ==="
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse -File -Include *.exe |
+            ForEach-Object { Write-Host $_.FullName }
+
+      # 在常见目录里精确寻找 nsis 安装器（中文文件名也能匹配）
+      - name: Find NSIS installer path (robust)
+        id: findexe
+        shell: pwsh
+        run: |
+          $roots = @("src-tauri/target", "target", "$env:GITHUB_WORKSPACE")
+          $patterns = @("*_x64-setup.exe","*-setup.exe","*.exe")
+          $exe = $null
+          foreach ($r in $roots) {
+            if (-not (Test-Path $r)) { continue }
+            $exe = Get-ChildItem -Path $r -Recurse -File -Include $patterns |
+              Where-Object { $_.FullName -match "\\bundle\\nsis\\" } |
+              Select-Object -First 1
+            if ($exe) { break }
+          }
+          if ($exe) {
+            Write-Host "FOUND EXE: $($exe.FullName)"
+            "exe_path=$($exe.FullName)" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "No installer found under bundle/nsis. Will zip whole target later."
+            "exe_path=" >> $env:GITHUB_OUTPUT
+          }
+
+      # 找到了就只上传安装器；找不到就上传整个 target 目录的压缩包
+      - name: Upload NSIS EXE (if found)
+        if: ${{ steps.findexe.outputs.exe_path != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimonToolbox-NSIS
+          path: ${{ steps.findexe.outputs.exe_path }}
+
+      - name: Zip full target (fallback)
+        if: ${{ steps.findexe.outputs.exe_path == '' }}
+        shell: pwsh
+        run: |
+          if (Test-Path "src-tauri/target") {
+            Compress-Archive -Path "src-tauri/target/*" -DestinationPath "target-full.zip" -Force
+          } elseif (Test-Path "target") {
+            Compress-Archive -Path "target/*" -DestinationPath "target-full.zip" -Force
+          } else {
+            Write-Error "No target dir found after build."
+          }
+
+      - name: Upload target-full.zip (fallback)
+        if: ${{ steps.findexe.outputs.exe_path == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimonToolbox-target-FULL
+          path: target-full.zip
