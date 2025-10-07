@@ -1,0 +1,47 @@
+
+{
+  "package": {
+    "productName": "对账匹配工具",
+    "version": "2.1.0"
+  },
+  "tauri": {
+    "identifier": "com.simon.reconcile",
+    "windows": [
+      {
+        "title": "对账匹配工具 · V2.1",
+        "width": 1280,
+        "height": 840,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' 'unsafe-inline' data: blob:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; object-src 'none'"
+    },
+    "allowlist": {
+      "all": false
+    },
+    "bundle": {
+      "active": true,
+      "targets": "nsis",
+      "icon": [ "src-tauri/icons/icon.ico" ],
+      "windows": {
+        "wix": null,
+        "nsis": {
+          "installerIcon": "src-tauri/icons/icon.ico",
+          "displayLanguageSelector": false,
+          "installMode": "perMachine"
+        }
+      }
+    },
+    "updater": { "active": false }
+  },
+  "build": {
+    "beforeDevCommand": "",
+    "beforeBuildCommand": "",
+    "devPath": "app",
+    "distDir": "app",
+    "withGlobalTauri": false
+  }
+}
