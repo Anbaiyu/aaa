@@ -1,11 +1,9 @@
-
 {
   "package": {
     "productName": "对账匹配工具",
     "version": "2.1.0"
   },
   "tauri": {
-    "identifier": "com.simon.reconcile",
     "windows": [
       {
         "title": "对账匹配工具 · V2.1",
@@ -25,7 +23,9 @@
     "bundle": {
       "active": true,
       "targets": "nsis",
-      "icon": [ "src-tauri/icons/icon.ico" ],
+      "icon": [
+        "src-tauri/icons/icon.ico"
+      ],
       "windows": {
         "wix": null,
         "nsis": {
@@ -33,9 +33,12 @@
           "displayLanguageSelector": false,
           "installMode": "perMachine"
         }
-      }
+      },
+      "identifier": "com.simon.reconcile"
     },
-    "updater": { "active": false }
+    "updater": {
+      "active": false
+    }
   },
   "build": {
     "beforeDevCommand": "",
