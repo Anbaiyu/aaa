@@ -21,8 +21,10 @@ jobs:
         run: cargo install tauri-cli --locked
         shell: pwsh
 
+      # 关键：在 src-tauri 目录下用 cargo 子命令构建
       - name: Build (NSIS)
-        run: tauri build
+        working-directory: src-tauri
+        run: cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis
         shell: pwsh
 
       - name: Upload NSIS artifact
