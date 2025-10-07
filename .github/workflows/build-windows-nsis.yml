@@ -17,11 +17,17 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --locked
+      - name: Install Tauri CLI (v1)
+        run: cargo install tauri-cli --version ^1 --locked
         shell: pwsh
 
-      # 关键：在 src-tauri 目录下用 cargo 子命令构建
+      - name: Show versions (debug)
+        run: |
+          rustc -V
+          cargo -V
+          cargo tauri -V
+        shell: pwsh
+
       - name: Build (NSIS)
         working-directory: src-tauri
         run: cargo tauri build --target x86_64-pc-windows-msvc --bundles nsis
